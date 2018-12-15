@@ -130,6 +130,28 @@ The `raw` method was changed from `protected` to `public` visibility. In additio
 
 If you are implementing this interface, you should add this method to your implementation.
 
+#### The `Login` Event
+
+**Likelihood Of Impact: Very Low**
+
+The `__construct` method of `Illuminate\Auth\Events\Login` event has a new `$guard` argument:
+
+    /**
+     * Create a new event instance.
+     *
+     * @param  string  $guard
+     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param  bool  $remember
+     * @return void
+     */
+    public function __construct($guard, $user, $remember)
+
+If you are dispatching this event manually within your application, you'll need to pass this new argument into the event's constructor. The following example passes the default framework guard to the Login event:
+
+    use Illuminate\Auth\Events\Login;
+
+    event(new Login(config('auth.defaults.guard'), $user, $remember))
+
 ### Blade
 
 #### The `or` Operator
@@ -400,6 +422,12 @@ If you have customized the default theme styles used for Markdown mailable templ
 
 The `QUEUE_DRIVER` environment variable has been renamed to `QUEUE_CONNECTION`. This should not affect existing applications that you are upgrading unless you intentionally modify your `config/queue.php` configuration file to match Laravel 5.7's.
 
+#### `WorkCommand` Options
+
+**Likelihood Of Impact: Very Low**
+
+The `stop-when-empty` option was added to the `WorkCommand`. If you extend this command, you need to add `stop-when-empty` to `$signature` property of your class.
+
 ### Routing
 
 #### The `Route::redirect` Method
@@ -460,6 +488,12 @@ The `validate` method [was added to the `Illuminate\Contracts\Validation\Validat
     public function validate();
 
 If you are implementing this interface, you should add this method to your implementation.
+
+### Testing
+
+**Likelihood of Impact: Medium**
+
+Laravel 5.7 introduces improved testing tools for Artisan commands. By default, Artisan command output is now mocked. If you are relying on the `artisan` method to run commands as part of your test, you should use `Artisan::call` or define `public $mockConsoleOutput = false` as a property in your test class.
 
 ### Miscellaneous
 

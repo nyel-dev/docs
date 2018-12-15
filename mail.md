@@ -25,7 +25,7 @@
 <a name="introduction"></a>
 ## Introduction
 
-Laravel provides a clean, simple API over the popular [SwiftMailer](https://swiftmailer.symfony.com/) library with drivers for SMTP, Mailgun, SparkPost, Amazon SES, PHP's `mail` function, and `sendmail`, allowing you to quickly get started sending mail through a local or cloud based service of your choice.
+Laravel provides a clean, simple API over the popular [SwiftMailer](https://swiftmailer.symfony.com/) library with drivers for SMTP, Mailgun, SparkPost, Amazon SES, and `sendmail`, allowing you to quickly get started sending mail through a local or cloud based service of your choice.
 
 <a name="driver-prerequisites"></a>
 ### Driver Prerequisites
@@ -41,6 +41,14 @@ To use the Mailgun driver, first install Guzzle, then set the `driver` option in
     'mailgun' => [
         'domain' => 'your-mailgun-domain',
         'secret' => 'your-mailgun-key',
+    ],
+
+If you are not using the "US" [Mailgun region](https://documentation.mailgun.com/en/latest/api-intro.html#mailgun-regions), you may define your region's endpoint in the `services` configuration file:
+
+    'mailgun' => [
+        'domain' => 'your-mailgun-domain',
+        'secret' => 'your-mailgun-key',
+        'endpoint' => 'api.eu.mailgun.net',
     ],
 
 #### SparkPost Driver
@@ -372,7 +380,7 @@ Embedding inline images into your emails is typically cumbersome; however, Larav
     <body>
         Here is an image:
 
-        <img src="{{ $message->embed($pathToFile) }}">
+        <img src="{{ $message->embed($pathToImage) }}">
     </body>
 
 > {note} `$message` variable is not available in markdown messages.

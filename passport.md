@@ -25,6 +25,7 @@
     - [Passing The Access Token](#passing-the-access-token)
 - [Token Scopes](#token-scopes)
     - [Defining Scopes](#defining-scopes)
+    - [Default Scope](#default-scope)
     - [Assigning Scopes To Tokens](#assigning-scopes-to-tokens)
     - [Checking Scopes](#checking-scopes)
 - [Consuming Your API With JavaScript](#consuming-your-api-with-javascript)
@@ -45,7 +46,7 @@ To get started, install Passport via the Composer package manager:
 
     composer require laravel/passport
 
-The Passport service provider registers its own database migration directory with the framework, so you should migrate your database after registering the provider. The Passport migrations will create the tables your application needs to store clients and access tokens:
+The Passport service provider registers its own database migration directory with the framework, so you should migrate your database after installing the package. The Passport migrations will create the tables your application needs to store clients and access tokens:
 
     php artisan migrate
 
@@ -260,7 +261,7 @@ Since your users will not be able to utilize the `client` command, Passport prov
 
 However, you will need to pair Passport's JSON API with your own frontend to provide a dashboard for your users to manage their clients. Below, we'll review all of the API endpoints for managing clients. For convenience, we'll use [Axios](https://github.com/mzabriskie/axios) to demonstrate making HTTP requests to the endpoints.
 
-The JSON API is guarded by the `web` and `auth` middlewares; therefore, it may only be called from your own application. It is not able to be called from an external source.
+The JSON API is guarded by the `web` and `auth` middleware; therefore, it may only be called from your own application. It is not able to be called from an external source.
 
 > {tip} If you don't want to implement the entire client management frontend yourself, you can use the [frontend quickstart](#frontend-quickstart) to have a fully functional frontend in a matter of minutes.
 
@@ -568,7 +569,7 @@ Once you have created a personal access client, you may issue tokens for a given
 
 Passport also includes a JSON API for managing personal access tokens. You may pair this with your own frontend to offer your users a dashboard for managing personal access tokens. Below, we'll review all of the API endpoints for managing personal access tokens. For convenience, we'll use [Axios](https://github.com/mzabriskie/axios) to demonstrate making HTTP requests to the endpoints.
 
-The JSON API is guarded by the `web` and `auth` middlewares; therefore, it may only be called from your own application. It is not able to be called from an external source.
+The JSON API is guarded by the `web` and `auth` middleware; therefore, it may only be called from your own application. It is not able to be called from an external source.
 
 > {tip} If you don't want to implement the personal access token frontend yourself, you can use the [frontend quickstart](#frontend-quickstart) to have a fully functional frontend in a matter of minutes.
 
@@ -652,6 +653,18 @@ You may define your API's scopes using the `Passport::tokensCan` method in the `
     Passport::tokensCan([
         'place-orders' => 'Place orders',
         'check-status' => 'Check order status',
+    ]);
+
+<a name="default-scope"></a>
+### Default Scope
+
+If a client does not request any specific scopes, you may configure your Passport server to attach a default scope to the token using the `setDefaultScope` method. Typically, you should call this method from the `boot` method of your `AuthServiceProvider`:
+
+    use Laravel\Passport\Passport;
+
+    Passport::setDefaultScope([
+        'check-status',
+        'place-orders',
     ]);
 
 <a name="assigning-scopes-to-tokens"></a>
@@ -775,6 +788,10 @@ If needed, you can customize the `laravel_token` cookie's name using the `Passpo
 
 When using this method of authentication, the default Laravel JavaScript scaffolding instructs Axios to always send the `X-CSRF-TOKEN` and `X-Requested-With` headers. However, you should be sure to include your CSRF token in a [HTML meta tag](/docs/{{version}}/csrf#csrf-x-csrf-token):
 
+    // In your application layout...
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    // Laravel's JavaScript scaffolding...
     window.axios.defaults.headers.common = {
         'X-Requested-With': 'XMLHttpRequest',
     };

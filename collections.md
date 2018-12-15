@@ -138,6 +138,7 @@ For the remainder of this documentation, we'll discuss each method available on 
 [shift](#method-shift)
 [shuffle](#method-shuffle)
 [slice](#method-slice)
+[some](#method-some)
 [sort](#method-sort)
 [sortBy](#method-sortby)
 [sortByDesc](#method-sortbydesc)
@@ -156,9 +157,13 @@ For the remainder of this documentation, we'll discuss each method available on 
 [unique](#method-unique)
 [uniqueStrict](#method-uniquestrict)
 [unless](#method-unless)
+[unlessEmpty](#method-unlessempty)
+[unlessNotEmpty](#method-unlessnotempty)
 [unwrap](#method-unwrap)
 [values](#method-values)
 [when](#method-when)
+[whenEmpty](#method-whenempty)
+[whenNotEmpty](#method-whennotempty)
 [where](#method-where)
 [whereStrict](#method-wherestrict)
 [whereIn](#method-wherein)
@@ -1530,6 +1535,11 @@ If you would like to limit the size of the returned slice, pass the desired size
 
 The returned slice will preserve keys by default. If you do not wish to preserve the original keys, you can use the [`values`](#method-values) method to reindex them.
 
+<a name="method-some"></a>
+#### `some()` {#collection-method}
+
+Alias for the [`contains`](#method-contains) method.
+
 <a name="method-sort"></a>
 #### `sort()` {#collection-method}
 
@@ -1770,7 +1780,7 @@ The static `times` method creates a new collection by invoking the callback a gi
 This method can be useful when combined with factories to create [Eloquent](/docs/{{version}}/eloquent) models:
 
     $categories = Collection::times(3, function ($number) {
-        return factory(Category::class)->create(['name' => 'Category #'.$number]);
+        return factory(Category::class)->create(['name' => "Category No. $number"]);
     });
 
     $categories->all();
@@ -1920,6 +1930,16 @@ The `unless` method will execute the given callback unless the first argument gi
 
 For the inverse of `unless`, see the [`when`](#method-when) method.
 
+<a name="method-unlessempty"></a>
+#### `unlessEmpty()` {#collection-method}
+
+Alias for the [`whenNotEmpty`](#method-whennotempty) method.
+
+<a name="method-unlessnotempty"></a>
+#### `unlessNotEmpty()` {#collection-method}
+
+Alias for the [`whenEmpty`](#method-whenempty) method.
+
 <a name="method-unwrap"></a>
 #### `unwrap()` {#collection-method}
 
@@ -1978,6 +1998,88 @@ The `when` method will execute the given callback when the first argument given 
     // [1, 2, 3, 4]
 
 For the inverse of `when`, see the [`unless`](#method-unless) method.
+
+<a name="method-whenempty"></a>
+#### `whenEmpty()` {#collection-method}
+
+The `whenEmpty` method will execute the given callback when the collection is empty:
+
+    $collection = collect(['michael', 'tom']);
+    
+    $collection->whenEmpty(function ($collection) {
+        return $collection->push('adam');
+    });
+    
+    $collection->all();
+    
+    // ['michael', 'tom']
+    
+    
+    $collection = collect();
+    
+    $collection->whenEmpty(function ($collection) {
+        return $collection->push('adam');
+    });
+    
+    $collection->all();
+    
+    // ['adam']  
+    
+    
+    $collection = collect(['michael', 'tom']);
+    
+    $collection->whenEmpty(function($collection) {
+        return $collection->push('adam');
+    }, function($collection) {
+        return $collection->push('taylor');
+    });
+
+    $collection->all();
+    
+    // ['michael', 'tom', 'taylor']
+
+For the inverse of `whenEmpty`, see the [`whenNotEmpty`](#method-whennotempty) method.
+
+<a name="method-whennotempty"></a>
+#### `whenNotEmpty()` {#collection-method}
+
+The `whenNotEmpty` method will execute the given callback when the collection is not empty:
+
+    $collection = collect(['michael', 'tom']);
+    
+    $collection->whenNotEmpty(function ($collection) {
+        return $collection->push('adam');
+    });
+    
+    $collection->all();
+    
+    // ['michael', 'tom', 'adam']
+    
+    
+    $collection = collect();
+    
+    $collection->whenNotEmpty(function ($collection) {
+        return $collection->push('adam');
+    });
+    
+    $collection->all();
+    
+    // []  
+    
+    
+    $collection = collect();
+    
+    $collection->whenNotEmpty(function($collection) {
+        return $collection->push('adam');
+    }, function($collection) {
+        return $collection->push('taylor');
+    });
+    
+    $collection->all();
+    
+    // ['taylor']
+
+For the inverse of `whenNotEmpty`, see the [`whenEmpty`](#method-whenempty) method.
 
 <a name="method-where"></a>
 #### `where()` {#collection-method}
@@ -2121,7 +2223,7 @@ The `zip` method merges together the values of the given array with the values o
 <a name="higher-order-messages"></a>
 ## Higher Order Messages
 
-Collections also provide support for "higher order messages", which are short-cuts for performing common actions on collections. The collection methods that provide higher order messages are: [`average`](#method-average), [`avg`](#method-avg), [`contains`](#method-contains), [`each`](#method-each), [`every`](#method-every), [`filter`](#method-filter), [`first`](#method-first), [`flatMap`](#method-flatmap), [`groupBy`](#method-groupby), [`keyBy`](#method-keyby), [`map`](#method-map), [`max`](#method-max), [`min`](#method-min), [`partition`](#method-partition), [`reject`](#method-reject), [`sortBy`](#method-sortby), [`sortByDesc`](#method-sortbydesc), [`sum`](#method-sum), and [`unique`](#method-unique).
+Collections also provide support for "higher order messages", which are short-cuts for performing common actions on collections. The collection methods that provide higher order messages are: [`average`](#method-average), [`avg`](#method-avg), [`contains`](#method-contains), [`each`](#method-each), [`every`](#method-every), [`filter`](#method-filter), [`first`](#method-first), [`flatMap`](#method-flatmap), [`groupBy`](#method-groupby), [`keyBy`](#method-keyby), [`map`](#method-map), [`max`](#method-max), [`min`](#method-min), [`partition`](#method-partition), [`reject`](#method-reject), [`some`](#method-some), [`sortBy`](#method-sortby), [`sortByDesc`](#method-sortbydesc), [`sum`](#method-sum), and [`unique`](#method-unique).
 
 Each higher order message can be accessed as a dynamic property on a collection instance. For instance, let's use the `each` higher order message to call a method on each object within a collection:
 

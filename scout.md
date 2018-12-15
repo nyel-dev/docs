@@ -71,7 +71,7 @@ Once you have configured a queue driver, set the value of the `queue` option in 
 
 When using the Algolia driver, you should configure your Algolia `id` and `secret` credentials in your `config/scout.php` configuration file. Once your credentials have been configured, you will also need to install the Algolia PHP SDK via the Composer package manager:
 
-    composer require algolia/algoliasearch-client-php
+    composer require algolia/algoliasearch-client-php:^1.27
 
 <a name="configuration"></a>
 ## Configuration
@@ -261,6 +261,20 @@ Sometimes you may need to only make a model searchable under certain conditions.
     {
         return $this->isPublished();
     }
+
+The `shouldBeSearchable` method is only applied when manipulating models through the `save` method, queries, or relationships. Directly making models or collections searchable using the `searchable` method will override the result of the `shouldBeSearchable` method:
+
+    // Will respect "shouldBeSearchable"...
+    App\Order::where('price', '>', 100)->searchable();
+
+    $user->orders()->searchable();
+
+    $order->save();
+
+    // Will override "shouldBeSearchable"...
+    $orders->searchable();
+
+    $order->searchable();
 
 <a name="searching"></a>
 ## Searching

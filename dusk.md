@@ -8,6 +8,7 @@
     - [Running Tests](#running-tests)
     - [Environment Handling](#environment-handling)
     - [Creating Browsers](#creating-browsers)
+    - [Browser Macros](#browser-macros)
     - [Authentication](#authentication)
     - [Database Migrations](#migrations)
 - [Interacting With Elements](#interacting-with-elements)
@@ -49,8 +50,6 @@ To get started, you should add the `laravel/dusk` Composer dependency to your pr
 
     composer require --dev laravel/dusk
 
-Once Dusk is installed, you should register the `Laravel\Dusk\DuskServiceProvider` service provider. Typically, this will be done automatically via Laravel's automatic service provider registration.
-
 > {note} If you are manually registering Dusk's service provider, you should **never** register it in your production environment, as doing so could lead to arbitrary users being able to authenticate with your application.
 
 After installing the Dusk package, run the `dusk:install` Artisan command:
@@ -66,6 +65,8 @@ To run your tests, use the `dusk` Artisan command. The `dusk` command accepts an
 If you had test failures the last time you ran the `dusk` command, you may save time by re-running the failing tests first using the `dusk:fails` command:
 
     php artisan dusk:fails
+
+> {note} Dusk requires its `chromedriver` binaries to be executable. If you're having problems running Dusk, you can ensure the binaries are executable using the following command: `chmod -R 0755 vendor/laravel/dusk/bin`.
 
 <a name="using-other-browsers"></a>
 ### Using Other Browsers
@@ -231,6 +232,43 @@ You may use the `resize` method to adjust the size of the browser window:
 The `maximize` method may be used to maximize the browser window:
 
     $browser->maximize();
+
+<a name="browser-macros"></a>
+### Browser Macros
+
+If you would like to define a custom browser method that you can re-use in a variety of your tests, you may use the `macro` method on the `Browser` class. Typically, you should call this method from a [service provider's](/docs/{{version}}/providers) `boot` method:
+
+    <?php
+
+    namespace App\Providers;
+
+    use Laravel\Dusk\Browser;
+    use Illuminate\Support\ServiceProvider;
+
+    class DuskServiceProvider extends ServiceProvider
+    {
+        /**
+         * Register the Dusk's browser macros.
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            Browser::macro('scrollToElement', function ($element = null) {
+                $this->script("$('html, body').animate({ scrollTop: $('$element').offset().top }, 0);");
+
+                return $this;
+            });
+        }
+    }
+
+The `macro` function accepts a name as its first argument, and a Closure as its second. The macro's Closure will be executed when calling the macro as a method on a `Browser` implementation:
+
+    $this->browse(function ($browser) use ($user) {
+        $browser->visit('/pay')
+                ->scrollToElement('#credit-card-details')
+                ->assertSee('Enter Credit Card Details');
+    });
 
 <a name="authentication"></a>
 ### Authentication
@@ -1269,31 +1307,7 @@ Once the component has been defined, we can easily select a date within the date
 <a name="running-tests-on-circle-ci"></a>
 ### CircleCI
 
-#### CircleCI 1.0
-
-If you are using CircleCI 1.0 to run your Dusk tests, you may use this configuration file as a starting point. Like TravisCI, we will use the `php artisan serve` command to launch PHP's built-in web server:
-
-    dependencies:
-      pre:
-          - curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          - sudo dpkg -i google-chrome.deb
-          - sudo sed -i 's|HERE/chrome\"|HERE/chrome\" --disable-setuid-sandbox|g' /opt/google/chrome/google-chrome
-          - rm google-chrome.deb
-
-    test:
-        pre:
-            - "./vendor/laravel/dusk/bin/chromedriver-linux":
-                background: true
-            - cp .env.testing .env
-            - "php artisan serve":
-                background: true
-
-        override:
-            - php artisan dusk
-
-#### CircleCI 2.0
-
- If you are using CircleCI 2.0 to run your Dusk tests, you may add these steps to your build:
+If you are using CircleCI to run your Dusk tests, you may use this configuration file as a starting point. Like TravisCI, we will use the `php artisan serve` command to launch PHP's built-in web server:
 
      version: 2
      jobs:
